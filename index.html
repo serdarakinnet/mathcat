@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#3b82f6">
+    <link rel="manifest" href="manifest.json">
+    <title>Mathcat Oyunu</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="apple-touch-icon" href="icon-192x192.png">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="background-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
+
+    <!-- Name Modal -->
+    <div class="modal-overlay active" id="name-modal">
+        <div class="modal-content glass-panel">
+            <h2>Hoşgeldin! 👋</h2>
+            <p>Mathcat oynamaya başlamadan önce ismini öğrenebilir miyiz?</p>
+            <div class="input-group">
+                <input type="text" id="name-input" placeholder="İsmini buraya yaz..." autocomplete="off">
+                <button class="primary-btn" id="start-btn">Başla</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-container" id="mathcat-view">
+        <header class="glass-panel main-header">
+            <div class="title">
+                <h1>Mathcat 🐱</h1>
+            </div>
+            
+            <div class="header-item user-info" id="user-profile" title="İsmini Değiştir">
+                <span class="avatar">👤</span>
+                <span class="name" id="display-name">Misafir</span>
+                <span class="edit-icon" style="font-size: 0.8rem; margin-left: 5px;">✏️</span>
+            </div>
+
+            <div class="stats-header">
+                <span class="badge" id="mc-streak-badge">🔥 Seri: 0</span>
+                <span class="badge" id="mc-score-badge">🏆 Puan: 0</span>
+            </div>
+        </header>
+
+        <div class="mathcat-container glass-panel">
+            <div class="setup-controls">
+                <select id="mc-grade-select" class="custom-select">
+                    <option value="2">2. Sınıf</option>
+                    <option value="3">3. Sınıf</option>
+                    <option value="4">4. Sınıf</option>
+                    <option value="5" selected>5. Sınıf</option>
+                </select>
+                <select id="mc-topic-select" class="custom-select">
+                    <option value="Toplama">Toplama</option>
+                    <option value="Çıkarma">Çıkarma</option>
+                    <option value="Çarpma">Çarpma</option>
+                    <option value="Bölme">Bölme</option>
+                </select>
+                <select id="mc-level-select" class="custom-select">
+                    <option value="Kolay">Kolay</option>
+                    <option value="Orta">Orta</option>
+                    <option value="Zor">Zor</option>
+                </select>
+            </div>
+
+            <div class="mc-scene">
+                <div class="mc-furniture">🛋️</div>
+                <div class="mc-mouse" id="mc-mouse">🐭</div>
+                <div class="mc-cat" id="mc-cat">🐱</div>
+                <div class="mc-bubble" id="mc-bubble">
+                    <span id="mc-question-text">?</span>
+                </div>
+            </div>
+            
+            <div class="mc-controls">
+                <div class="answer-section">
+                    <input type="number" id="mc-answer-input" placeholder="Cevabın..." autocomplete="off">
+                    <button class="primary-btn" id="mc-check-btn">Yanıtla</button>
+                </div>
+                <p id="mc-feedback-text" class="feedback-msg">Oyuna başlamak için bir işlem çöz!</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Credit Footer -->
+    <div class="credit-footer">
+        Tasarlayan: Miray AKIN
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('ServiceWorker registration failed: ', error);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>
