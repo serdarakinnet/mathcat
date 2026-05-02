@@ -18,10 +18,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const topicSelect = document.getElementById('mc-topic-select');
     const levelSelect = document.getElementById('mc-level-select');
 
-    let mcScore = 0;
-    let mcStreak = 0;
+    let mcScore = parseInt(localStorage.getItem('mc_score')) || 0;
+    let mcStreak = parseInt(localStorage.getItem('mc_streak')) || 0;
     let mcCorrectAnswer = null;
     let mcConsecutiveCorrect = 0;
+
+    // Load saved settings
+    const savedGrade = localStorage.getItem('mc_grade');
+    const savedTopic = localStorage.getItem('mc_topic');
+    const savedLevel = localStorage.getItem('mc_level');
+
+    if (savedGrade) gradeSelect.value = savedGrade;
+    if (savedTopic) topicSelect.value = savedTopic;
+    if (savedLevel) levelSelect.value = savedLevel;
 
     // --- Name Logic ---
     const savedName = localStorage.getItem('playerName');
@@ -70,16 +79,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     gradeSelect.addEventListener('change', () => {
         mcConsecutiveCorrect = 0; // reset progress on grade change
+        localStorage.setItem('mc_grade', gradeSelect.value);
         nextMathcatQuestion();
     });
 
     topicSelect.addEventListener('change', () => {
         mcConsecutiveCorrect = 0; // reset progress on topic change
+        localStorage.setItem('mc_topic', topicSelect.value);
         nextMathcatQuestion();
     });
 
     levelSelect.addEventListener('change', () => {
         mcConsecutiveCorrect = 0; // reset progress on level change
+        localStorage.setItem('mc_level', levelSelect.value);
         nextMathcatQuestion();
     });
 
@@ -104,31 +116,23 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function saveStreak() {
-        let lastPlayed = localStorage.getItem('mc_lastPlayed');
-        let today = new Date();
-        let todayStr = today.toISOString();
-        
-        if (!lastPlayed) {
-            mcStreak++;
-            localStorage.setItem('mc_lastPlayed', todayStr);
-        } else {
-            let lastDate = new Date(lastPlayed);
-            lastDate.setHours(0,0,0,0);
-            let todayMidnight = new Date();
-            todayMidnight.setHours(0,0,0,0);
-            
-            if (todayMidnight > lastDate) {
-                mcStreak++;
-                localStorage.setItem('mc_lastPlayed', todayStr);
-            }
-        }
+        mcStreak++;
         localStorage.setItem('mc_streak', mcStreak);
+        localStorage.setItem('mc_lastPlayed', new Date().toISOString());
         updateMcStats();
     }
 
     function updateMcStats() {
         mcStreakBadge.textContent = `🔥 Seri: ${mcStreak}`;
         mcScoreBadge.textContent = `🏆 Puan: ${mcScore}`;
+        localStorage.setItem('mc_score', mcScore);
+        localStorage.setItem('mc_streak', mcStreak);
+    }
+
+    function animateMouseJump(isWrong = false) {
+        mcMouse.classList.remove('mouse-jump-correct', 'mouse-jump-wrong');
+        void mcMouse.offsetWidth; // trigger reflow
+        mcMouse.classList.add(isWrong ? 'mouse-jump-wrong' : 'mouse-jump-correct');
     }
 
     function nextMathcatQuestion() {
@@ -151,6 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (mcConsecutiveCorrect === 0) {
             mcFeedbackText.textContent = 'Oyuna başlamak için bir işlem çöz!';
             mcCat.style.transform = 'none';
+            document.getElementById('cat-img').src = 'images/cat_default.png';
         }
         mcFeedbackText.className = 'feedback-msg';
         
@@ -184,7 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 num2 = Math.floor(Math.random() * (1000 * levelMult)) + 500;
             }
             ans = num1 + num2;
-            text = `${num1} + ${num2} = ?`;
+            text = `<div class="vertical-math"><div>${num1}</div><div class="op-line"><span>+</span>${num2}</div></div>`;
         } else if (topic === "Çıkarma") {
             if (grade === 2) {
                 num1 = Math.floor(Math.random() * (40 * levelMult)) + 30;
@@ -201,7 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (num2 > num1) { let temp = num1; num1 = num2; num2 = temp; }
             ans = num1 - num2;
-            text = `${num1} - ${num2} = ?`;
+            text = `<div class="vertical-math"><div>${num1}</div><div class="op-line"><span>-</span>${num2}</div></div>`;
         } else if (topic === "Çarpma") {
             if (grade === 2) {
                 num1 = Math.floor(Math.random() * 5) + 1; // 1-5 çarpım tablosu
@@ -221,7 +226,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (level === "Zor") { num1 += 100; }
             }
             ans = num1 * num2;
-            text = `${num1} x ${num2} = ?`;
+            text = `<div class="vertical-math"><div>${num1}</div><div class="op-line"><span>x</span>${num2}</div></div>`;
         } else if (topic === "Bölme") {
             if (grade === 2) {
                 num2 = Math.floor(Math.random() * 5) + 1;
@@ -255,16 +260,24 @@ document.addEventListener('DOMContentLoaded', () => {
             mcConsecutiveCorrect++;
             mcScore += 10;
             
+            document.getElementById('cat-img').src = 'images/cat_default.png';
+            
             if (mcConsecutiveCorrect >= 5) {
                 mcFeedbackText.textContent = "HARİKA! Fareyi YAKALADIN! 🐱⚡🐭 Günlük seriyi tamamladın!";
                 mcFeedbackText.className = 'feedback-msg success';
                 saveStreak(); 
                 
-                mcMouse.style.opacity = '0';
-                mcMouse.style.transform = 'translateY(-110px) translateX(20px) scale(0)';
-                // Mobile check for cat translation
-                const catMove = window.innerWidth <= 600 ? 120 : 220;
-                mcCat.style.transform = `translateX(-${catMove}px) scale(1.2)`;
+                animateMouseJump(false);
+                
+                document.getElementById('cat-img').src = 'images/cat_with_mouse.png';
+                
+                const catMove = window.innerWidth <= 600 ? 150 : 350;
+                mcCat.style.transform = `translateX(-${catMove}px) scale(1.1)`;
+                
+                // Hide the mouse element precisely when the cat reaches its position
+                setTimeout(() => {
+                    mcMouse.style.opacity = '0';
+                }, 500);
                 
                 setTimeout(() => {
                     mcConsecutiveCorrect = 0; 
@@ -274,9 +287,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 mcFeedbackText.textContent = `Doğru! Kedi yaklaşıyor... (${mcConsecutiveCorrect}/5)`;
                 mcFeedbackText.className = 'feedback-msg success';
                 
-                mcMouse.style.opacity = '1';
-                mcMouse.style.transform = 'translateY(-110px) translateX(20px)';
-                const stepMove = window.innerWidth <= 600 ? 25 : 44;
+                animateMouseJump(false);
+                
+                const stepMove = window.innerWidth <= 600 ? 30 : 70;
                 mcCat.style.transform = `translateX(-${mcConsecutiveCorrect * stepMove}px) scale(1.05)`;
                 
                 setTimeout(() => {
@@ -285,12 +298,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } else {
             mcConsecutiveCorrect = 0; 
-            mcFeedbackText.textContent = "Yanlış cevap! Fare kaçtı, kedi başa döndü! (0/5)";
+            mcFeedbackText.textContent = "Yanlış cevap! Fare seninle dalga geçiyor! (0/5)";
             mcFeedbackText.className = 'feedback-msg error';
             
             mcCat.style.transform = 'none';
-            mcMouse.style.opacity = '0';
-            mcMouse.style.transform = 'none';
+            document.getElementById('cat-img').src = 'images/cat_default.png';
+            
+            animateMouseJump(true);
             
             mcAnswerInput.style.transform = 'translateX(10px)';
             setTimeout(() => mcAnswerInput.style.transform = 'translateX(-10px)', 100);
