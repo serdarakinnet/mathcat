@@ -94,6 +94,10 @@
     </div>
 
     <script src="script.js"></script>
+    <script type="module">
+        import { injectSpeedInsights } from './vendor/speed-insights.mjs';
+        injectSpeedInsights();
+    </script>
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
